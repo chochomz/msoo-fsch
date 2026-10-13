@@ -26,12 +26,12 @@
         }
     </style>
 </head>
-<body class="bg-white text-slate-900 antialiased h-screen flex flex-col overflow-hidden">
+<body class="bg-white text-slate-900 antialiased h-screen flex flex-col overflow-hidden pt-safe">
 
     <!-- Google Authentication & Password Lock Screen Overlay with Auth Bypass Switch -->
     <div id="lockScreen" class="fixed inset-0 z-50 bg-white flex items-center justify-center p-4">
         <!-- Auth OFF/ON Testing Switch at Top Right -->
-        <div class="absolute top-4 right-4 flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full shadow-inner border border-slate-200">
+        <div class="absolute top-6 right-6 flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full shadow-inner border border-slate-200">
             <span class="text-[11px] font-bold text-slate-600">인증 패스(테스트)</span>
             <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" id="authBypassToggle" class="sr-only peer" onchange="toggleAuthBypass(event)">
@@ -67,7 +67,7 @@
                     <label for="rememberMeCheck" class="text-xs text-slate-600 select-none cursor-pointer">자동로그인</label>
                 </div>
 
-                <button type="submit" id="loginSubmitBtn" class="w-full py-2.5 mt-2 bg-white border border-slate-300 text-slate-800 font-medium rounded-xl hover:bg-slate-50 transition text-xs">
+                <button type="submit" id="loginSubmitBtn" class="w-full py-2 mt-2 bg-white border border-slate-300 text-slate-800 font-medium rounded-xl hover:bg-slate-50 transition text-[11px] shadow-sm">
                     감사합니다 들어가시지요 🙇‍♂️
                 </button>
             </form>
@@ -75,8 +75,8 @@
         </div>
     </div>
 
-    <!-- App Header -->
-    <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shrink-0">
+    <!-- App Header with extra top breathing room for iPhone notch/status bar -->
+    <header class="bg-white border-b border-slate-200 px-4 pt-4 pb-3 flex items-center justify-between z-10 shrink-0">
         <div class="flex items-center space-x-2">
             <!-- Year Calendar Modal Trigger Emoji -->
             <button onclick="openYearCalendarModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl flex items-center justify-center transition shadow-sm" title="연도별 달력 보기">
@@ -131,7 +131,6 @@
 
             <!-- Modal Content Body -->
             <div class="p-4 overflow-y-auto flex-1 space-y-4 bg-white">
-                <!-- Existing Events List for this date -->
                 <div>
                     <div id="modalEventsList" class="space-y-2">
                         <!-- Events populated dynamically -->
@@ -305,7 +304,7 @@
         let secretTapCount = 0;
         let secretTapTimer = null;
 
-        // South Korea National & Public Holidays (Extended through 2040)
+        // South Korea National & Public Holidays through 2040
         const holidays2040 = {
             "2026-01-01": "신정", "2026-02-17": "설날", "2026-03-01": "삼일절", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-25": "추석", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "기독탄신일",
             "2027-01-01": "신정", "2027-02-06": "설날", "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-09-15": "추석", "2027-10-03": "개천절", "2027-10-09": "한글날", "2027-12-25": "기독탄신일",
@@ -804,20 +803,17 @@
             const totalDays = new Date(year, month + 1, 0).getDate();
             const prevTotalDays = new Date(year, month, 0).getDate();
 
-            // Previous month trailing days
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = prevTotalDays - i;
                 const cell = createDayCell(year, month - 1, dayNum, true);
                 daysGrid.appendChild(cell);
             }
 
-            // Current month days
             for (let day = 1; day <= totalDays; day++) {
                 const cell = createDayCell(year, month, day, false);
                 daysGrid.appendChild(cell);
             }
 
-            // Next month leading days
             const totalCellsSoFar = firstDayIndex + totalDays;
             const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
             for (let day = 1; day <= remainingCells; day++) {
