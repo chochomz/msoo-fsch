@@ -67,7 +67,7 @@
                     <label for="rememberMeCheck" class="text-xs text-slate-600 select-none cursor-pointer">자동로그인</label>
                 </div>
 
-                <button type="submit" id="loginSubmitBtn" class="w-full py-2 mt-2 bg-white border border-slate-300 text-slate-800 font-medium rounded-xl hover:bg-slate-50 transition text-[11px] shadow-sm">
+                <button type="submit" id="loginSubmitBtn" class="w-full py-1.5 mt-2 bg-white border border-slate-300 text-slate-800 font-medium rounded-lg hover:bg-slate-50 transition text-[11px] shadow-sm">
                     감사합니다 들어가시지요 🙇‍♂️
                 </button>
             </form>
@@ -76,7 +76,7 @@
     </div>
 
     <!-- App Header with extra top breathing room for iPhone notch/status bar -->
-    <header class="bg-white border-b border-slate-200 px-4 pt-4 pb-3 flex items-center justify-between z-10 shrink-0">
+    <header class="bg-white border-b border-slate-200 px-4 pt-6 pb-3 flex items-center justify-between z-10 shrink-0">
         <div class="flex items-center space-x-2">
             <!-- Year Calendar Modal Trigger Emoji -->
             <button onclick="openYearCalendarModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl flex items-center justify-center transition shadow-sm" title="연도별 달력 보기">
@@ -106,8 +106,8 @@
         </div>
     </header>
 
-    <!-- Main Calendar Scroll Container -->
-    <main id="calendarContainer" class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col pb-24 bg-white">
+    <!-- Main Calendar Scroll Container with bottom padding so bottom bar doesn't obscure content -->
+    <main id="calendarContainer" class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col pb-36 bg-white">
         <!-- Calendar months populated dynamically -->
     </main>
 
@@ -193,7 +193,7 @@
                     </button>
                 </div>
             </div>
-            <div id="eventListModalBody" class="p-5 space-y-3 overflow-y-auto bg-white flex-1 font-mono text-xs text-slate-800">
+            <div id="eventListModalBody" class="p-5 space-y-1 overflow-y-auto bg-white flex-1 font-mono text-xs text-slate-800">
                 <!-- Populated chronologically -->
             </div>
         </div>
@@ -304,8 +304,8 @@
         let secretTapCount = 0;
         let secretTapTimer = null;
 
-        // South Korea National & Public Holidays through 2040
-        const holidays2040 = {
+        // South Korea National & Public Holidays through 2040 (Modifiable)
+        let holidays2040 = {
             "2026-01-01": "신정", "2026-02-17": "설날", "2026-03-01": "삼일절", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-25": "추석", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "기독탄신일",
             "2027-01-01": "신정", "2027-02-06": "설날", "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-09-15": "추석", "2027-10-03": "개천절", "2027-10-09": "한글날", "2027-12-25": "기독탄신일",
             "2028-01-01": "신정", "2028-01-26": "설날", "2028-03-01": "삼일절", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-03": "개천절", "2028-10-09": "한글날", "2028-12-25": "기독탄신일",
@@ -322,9 +322,9 @@
             const cachedRep = localStorage.getItem('msoo_fsch_rep_email');
             if (cachedRep) representativeEmail = cachedRep;
 
-            const cachedMembers = localStorage.getItem('msoo_fsch_allowed_members');
-            if (cachedMembers) {
-                try { allowedFamilyEmails = JSON.parse(cachedMembers); } catch(e) {}
+            const cachedHolidays = localStorage.getItem('msoo_fsch_holidays');
+            if (cachedHolidays) {
+                try { holidays2040 = JSON.parse(cachedHolidays); } catch(e) {}
             }
 
             try {
@@ -342,9 +342,9 @@
                         representativeEmail = data.representativeEmail;
                         localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
                     }
-                    if (data.allowedMembers && Array.isArray(data.allowedMembers)) {
-                        allowedFamilyEmails = data.allowedMembers;
-                        localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
+                    if (data.holidays) {
+                        holidays2040 = data.holidays;
+                        localStorage.setItem('msoo_fsch_holidays', JSON.stringify(holidays2040));
                     }
                 }
             } catch(e) {
@@ -605,20 +605,25 @@
                 body.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 일정이 없습니다.</p>';
             } else {
                 let lastYear = "";
+                let lastDateKey = "";
                 allEvents.forEach(ev => {
                     const yearPart = ev.dateKey.split('-')[0];
                     if (yearPart !== lastYear) {
                         lastYear = yearPart;
                         const yearDiv = document.createElement('div');
-                        yearDiv.className = 'text-xs font-bold text-slate-400 pt-3 pb-1 border-b border-slate-100';
+                        yearDiv.className = 'text-xs font-bold text-slate-400 pt-2 pb-0.5 border-b border-slate-100';
                         yearDiv.innerText = `${yearPart}년`;
                         body.appendChild(yearDiv);
                     }
 
                     const parts = ev.dateKey.split('-');
+                    const dateDisplay = `${parseInt(parts[1])}월 ${parseInt(parts[2])}일`;
+                    const isSameDate = (ev.dateKey === lastDateKey);
+                    lastDateKey = ev.dateKey;
+
                     const line = document.createElement('div');
-                    line.className = 'py-1 text-xs text-slate-800';
-                    line.innerText = `${parts[0]}년 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일 - ${ev.isHoliday ? '[국경일] ' : ''}${ev.title}`;
+                    line.className = 'py-0.5 text-xs text-slate-800 leading-tight';
+                    line.innerText = isSameDate ? `    - ${ev.isHoliday ? '[국경일] ' : ''}${ev.title}` : `${dateDisplay} - ${ev.isHoliday ? '[국경일] ' : ''}${ev.title}`;
                     body.appendChild(line);
                 });
             }
@@ -648,6 +653,7 @@
 
             let textToCopy = "";
             let lastYear = "";
+            let lastDateKey = "";
             allEvents.forEach(ev => {
                 const yearPart = ev.dateKey.split('-')[0];
                 if (yearPart !== lastYear) {
@@ -655,7 +661,11 @@
                     textToCopy += `[${yearPart}년]\n`;
                 }
                 const parts = ev.dateKey.split('-');
-                textToCopy += `${parts[0]}년 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일 - ${ev.title}\n`;
+                const dateDisplay = `${parseInt(parts[1])}월 ${parseInt(parts[2])}일`;
+                const isSameDate = (ev.dateKey === lastDateKey);
+                lastDateKey = ev.dateKey;
+
+                textToCopy += isSameDate ? `    - ${ev.title}\n` : `${dateDisplay} - ${ev.title}\n`;
             });
 
             const textarea = document.createElement('textarea');
@@ -664,7 +674,7 @@
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            showToast("전체 일정이 클립보드에 복사되었습니다!");
+            showToast("전체 일정이 복사되었습니다!");
         };
 
         // Infinite Square Grid Calendar renderer through 2040
@@ -747,11 +757,11 @@
 
                 const btn = document.createElement('button');
                 btn.id = `bottom-pill-${y}-${m}`;
-                btn.className = `px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 ${
+                btn.className = `px-2 py-1 rounded-lg text-[11px] font-bold shrink-0 transition flex items-center space-x-0.5 ${
                     isSelected ? 'bg-slate-200 text-slate-900 border border-slate-300' : hasAny ? 'bg-amber-100 text-slate-800' : 'bg-white text-slate-600 hover:bg-slate-50'
                 }`;
                 
-                btn.innerHTML = `<span>${m + 1}월</span>${hasAny ? `<span class="text-[10px] text-slate-700">${monthEventCount}</span>` : ''}`;
+                btn.innerHTML = `<span>${m + 1}월</span>${hasAny ? `<span class="text-[9px] text-slate-700">${monthEventCount}</span>` : ''}`;
                 btn.onclick = () => jumpToMonth(y, m);
                 bar.appendChild(btn);
             }
@@ -761,11 +771,11 @@
             const bar = document.getElementById('bottomMonthBar');
             const pills = bar.querySelectorAll('button');
             pills.forEach(p => {
-                p.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 bg-white text-slate-600 hover:bg-slate-50';
+                p.className = 'px-2 py-1 rounded-lg text-[11px] font-bold shrink-0 transition flex items-center space-x-0.5 bg-white text-slate-600 hover:bg-slate-50';
             });
             const targetPill = document.getElementById(`bottom-pill-${year}-${month}`);
             if (targetPill) {
-                targetPill.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 bg-slate-200 text-slate-900 border border-slate-300';
+                targetPill.className = 'px-2 py-1 rounded-lg text-[11px] font-bold shrink-0 transition flex items-center space-x-0.5 bg-slate-200 text-slate-900 border border-slate-300';
                 targetPill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
         }
@@ -780,7 +790,7 @@
             const blockId = isCurrentCenter ? 'month-block-0' : `month-${year}-${month}`;
 
             const wrapper = document.createElement('div');
-            wrapper.className = 'month-block shrink-0 flex flex-col bg-white border-b border-slate-200';
+            wrapper.className = 'month-block shrink-0 flex flex-col bg-white';
             wrapper.id = blockId;
             wrapper.setAttribute('data-year', year);
             wrapper.setAttribute('data-month', month);
@@ -835,7 +845,7 @@
             const hasEvents = (eventsData[dateKey] && eventsData[dateKey].length > 0) || holidays2040[dateKey];
 
             const cell = document.createElement('div');
-            cell.className = `aspect-square p-1 flex flex-col justify-between border-r border-b border-slate-200 transition-all ${
+            cell.className = `aspect-square p-0.5 flex flex-col justify-between border-r border-b border-slate-200 transition-all ${
                 isOtherMonth ? 'bg-slate-50 opacity-40 text-slate-300' : hasEvents ? 'bg-amber-50 text-slate-900' : 'bg-white text-slate-800'
             }`;
 
@@ -862,7 +872,7 @@
             cell.appendChild(topRow);
 
             const eventsListContainer = document.createElement('div');
-            eventsListContainer.className = 'flex-1 flex flex-col space-y-0.5 overflow-hidden mt-0.5';
+            eventsListContainer.className = 'flex-1 flex flex-col space-y-0 overflow-hidden mt-0';
 
             let combinedEvents = [];
             if (holidays2040[dateKey]) {
@@ -878,7 +888,7 @@
             combinedEvents.forEach(ev => {
                 const badge = document.createElement('div');
                 let badgeStyle = 'text-slate-800 text-[8px] truncate leading-tight';
-                if (ev.isHoliday || ev.category === 'dark') {
+                if (ev.isHoliday || ev.category === 'dark' || ev.title.includes('🔴')) {
                     badgeStyle = 'text-rose-600 font-bold text-[8px] truncate leading-tight';
                 }
                 badge.className = badgeStyle;
@@ -943,13 +953,11 @@
                 titleSpan.innerText = ev.isHoliday ? `[국경일] ${ev.title}` : ev.title;
                 item.appendChild(titleSpan);
 
-                if (!ev.isHoliday) {
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'text-rose-600 hover:text-rose-800 p-1';
-                    delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
-                    delBtn.onclick = () => handleDeleteEvent(ev.id);
-                    item.appendChild(delBtn);
-                }
+                const delBtn = document.createElement('button');
+                delBtn.className = 'text-rose-600 hover:text-rose-800 p-1';
+                delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
+                delBtn.onclick = () => handleDeleteEvent(ev.id, ev.isHoliday);
+                item.appendChild(delBtn);
 
                 listEl.appendChild(item);
             });
@@ -984,7 +992,16 @@
             }
         };
 
-        window.handleDeleteEvent = async function(eventId) {
+        window.handleDeleteEvent = async function(eventId, isHoliday) {
+            if (isHoliday) {
+                delete holidays2040[activeDateKey];
+                localStorage.setItem('msoo_fsch_holidays', JSON.stringify(holidays2040));
+                showToast("국경일이 삭제되었습니다.");
+                renderInfiniteCalendar();
+                renderModalEventsList();
+                return;
+            }
+
             try {
                 if (db && currentUser && !eventId.startsWith('local_')) {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'family_events', eventId));
