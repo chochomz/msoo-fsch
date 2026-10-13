@@ -28,22 +28,27 @@
 </head>
 <body class="bg-white text-slate-900 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- Google Authentication & Password Lock Screen Overlay -->
+    <!-- Google Authentication & Password Lock Screen Overlay with Auth Bypass Switch -->
     <div id="lockScreen" class="fixed inset-0 z-50 bg-white flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl border border-slate-200 shadow-xl p-8 w-full max-w-sm text-center">
-            <div id="secretLogoTrigger" class="w-16 h-16 bg-white border border-slate-200 text-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm cursor-pointer select-none">
+        <!-- Auth OFF/ON Testing Switch at Top Right -->
+        <div class="absolute top-4 right-4 flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-full shadow-inner border border-slate-200">
+            <span class="text-[11px] font-bold text-slate-600">인증 패스(테스트)</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="authBypassToggle" class="sr-only peer" onchange="toggleAuthBypass(event)">
+                <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+        </div>
+
+        <div class="bg-white p-8 w-full max-w-sm text-center">
+            <div id="secretLogoTrigger" class="w-14 h-14 bg-white text-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-xl cursor-pointer select-none">
                 <i class="fa-solid fa-calendar-days"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">우리 가족 달력</h2>
             
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3.5 text-left">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
                 <div>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <i class="fa-solid fa-envelope text-xs"></i>
-                        </span>
-                        <input type="email" id="googleEmailInput" placeholder="family@gmail.com" 
-                            class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition"
+                        <input type="email" id="googleEmailInput" placeholder="이메일 입력" 
+                            class="w-full px-4 py-3.5 bg-slate-50 border-0 rounded-2xl text-sm shadow-inner focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
                             oninput="handleEmailInput(event)"
                             required>
                     </div>
@@ -51,22 +56,19 @@
 
                 <div>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-                            <i class="fa-solid fa-key text-xs"></i>
-                        </span>
-                        <input type="password" id="familyPassword" placeholder="가족 공동 비밀번호 입력" 
-                            class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition"
+                        <input type="password" id="familyPassword" placeholder="비밀번호 입력" 
+                            class="w-full px-4 py-3.5 bg-slate-50 border-0 rounded-2xl text-sm shadow-inner focus:outline-none focus:ring-1 focus:ring-slate-300 transition"
                             maxlength="20" required>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-2 pt-1">
-                    <input type="checkbox" id="rememberMeCheck" class="w-4 h-4 text-slate-800 border-slate-300 rounded focus:ring-slate-400 cursor-pointer" checked>
-                    <label for="rememberMeCheck" class="text-xs text-slate-600 select-none cursor-pointer">이 기기에서 자동 로그인 유지</label>
+                <div class="flex items-center space-x-2 pt-1 px-1">
+                    <input type="checkbox" id="rememberMeCheck" class="w-4 h-4 text-slate-800 border-slate-300 rounded focus:ring-slate-300 cursor-pointer" checked>
+                    <label for="rememberMeCheck" class="text-xs text-slate-600 select-none cursor-pointer">자동로그인</label>
                 </div>
 
-                <button type="submit" id="loginSubmitBtn" class="w-full py-3.5 mt-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-2xl shadow-sm hover:bg-slate-50 active:scale-98 transition text-sm">
-                    감사합니다 어서오세요 🙇‍♂️
+                <button type="submit" id="loginSubmitBtn" class="w-full py-2.5 mt-2 bg-white border border-slate-300 text-slate-800 font-medium rounded-xl hover:bg-slate-50 transition text-xs">
+                    감사합니다 들어가시지요 🙇‍♂️
                 </button>
             </form>
             <p id="loginError" class="text-rose-600 text-xs mt-3 hidden">이메일 또는 비밀번호가 올바르지 않습니다.</p>
@@ -76,25 +78,26 @@
     <!-- App Header -->
     <header class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10 shrink-0">
         <div class="flex items-center space-x-2">
-            <div id="headerLogoIcon" class="w-9 h-9 bg-white border border-slate-200 text-slate-900 rounded-xl flex items-center justify-center shadow-sm cursor-pointer select-none" title="7번 터치시 관리자 설정">
-                <i class="fa-solid fa-calendar-days text-sm"></i>
-            </div>
+            <!-- Year Calendar Modal Trigger Emoji -->
+            <button onclick="openYearCalendarModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 rounded-xl flex items-center justify-center transition shadow-sm" title="연도별 달력 보기">
+                📅
+            </button>
             <div>
                 <h1 id="headerMonthTitle" class="text-lg font-bold text-slate-900 leading-none">2026년 6월</h1>
-                <span class="text-[10px] text-slate-500 font-medium">msoo-fsch 가족 공유 캘린더</span>
+                <span class="text-[10px] text-slate-500 font-medium">가족 공유 캘린더</span>
             </div>
         </div>
         <div class="flex items-center space-x-2">
+            <!-- Event List View Button (Chronological Modal) -->
+            <button onclick="openEventListModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl flex items-center justify-center transition shadow-sm" title="전체 일정 목록">
+                <i class="fa-solid fa-list text-sm"></i>
+            </button>
             <!-- Search Button -->
             <button onclick="openSearchModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl flex items-center justify-center transition shadow-sm" title="일정 검색">
                 <i class="fa-solid fa-magnifying-glass text-sm"></i>
             </button>
             <button onclick="goToToday()" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition shadow-sm">
                 오늘
-            </button>
-            <button onclick="openNotificationModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl flex items-center justify-center transition relative shadow-sm">
-                <i class="fa-regular fa-bell text-sm"></i>
-                <span id="notifBadge" class="absolute top-2 right-2 w-2 h-2 bg-slate-900 rounded-full hidden"></span>
             </button>
             <!-- Admin Settings Button -->
             <button id="adminSettingsBtn" onclick="openAdminSettingsModal()" class="w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 rounded-xl flex items-center justify-center transition hidden shadow-sm" title="가족 대표 관리자 설정">
@@ -109,73 +112,42 @@
     </main>
 
     <!-- Bottom Quick-Jump Month Bar -->
-    <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-3 py-2.5 z-20 shadow-md">
-        <div id="bottomMonthBar" class="flex items-center space-x-2 overflow-x-auto no-scrollbar px-1">
-            <!-- Dynamically populated month pills with event counts -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-3 py-2 z-20 shadow-md">
+        <div id="bottomMonthBar" class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar px-1">
+            <!-- Dynamically populated month pills with zero gap -->
         </div>
     </nav>
 
-    <!-- Event Modal -->
+    <!-- Event Modal (Extremely compact and simple) -->
     <div id="eventModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl transform translate-y-full sm:translate-y-0 transition-transform duration-300 overflow-hidden border border-slate-200">
+        <div class="bg-white w-full sm:max-w-sm sm:rounded-3xl rounded-t-3xl max-h-[80vh] flex flex-col shadow-2xl transform translate-y-full sm:translate-y-0 transition-transform duration-300 overflow-hidden border border-slate-200">
             <!-- Modal Header -->
-            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
-                <div class="flex items-center space-x-2">
-                    <span id="modalDateTitle" class="text-base font-bold text-slate-900">2026년 6월 12일 (금)</span>
-                </div>
-                <button onclick="closeEventModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-50 transition shadow-sm">
-                    <i class="fa-solid fa-xmark text-sm"></i>
+            <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between bg-white">
+                <span id="modalDateTitle" class="text-sm font-bold text-slate-900">2026년 6월 12일 (금)</span>
+                <button onclick="closeEventModal()" class="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-50 transition shadow-sm">
+                    <i class="fa-solid fa-xmark text-xs"></i>
                 </button>
             </div>
 
             <!-- Modal Content Body -->
-            <div class="p-5 overflow-y-auto flex-1 space-y-5 bg-white">
+            <div class="p-4 overflow-y-auto flex-1 space-y-4 bg-white">
                 <!-- Existing Events List for this date -->
                 <div>
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">이 날의 일정 (최대 5개)</h3>
-                    <div id="modalEventsList" class="space-y-2.5">
+                    <div id="modalEventsList" class="space-y-2">
                         <!-- Events populated dynamically -->
                     </div>
                 </div>
 
-                <!-- Add New Event Form -->
-                <div class="border-t border-slate-200 pt-4">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">새 일정 추가</h3>
-                    <form id="eventForm" onsubmit="handleSaveEvent(event)" class="space-y-3">
+                <!-- Add New Event Form (Extremely simple) -->
+                <div class="border-t border-slate-100 pt-3">
+                    <form id="eventForm" onsubmit="handleSaveEvent(event)" class="space-y-2.5">
                         <input type="hidden" id="eventTargetDate">
                         <div>
-                            <input type="text" id="eventTitle" placeholder="일정 제목 입력 (예: 가족 저녁 식사)" 
-                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
+                            <input type="text" id="eventTitle" placeholder="일정 입력" 
+                                class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <select id="eventCategory" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-400">
-                                    <option value="slate">⚪ 일반 일정</option>
-                                    <option value="dark">⚫ 주요 행사</option>
-                                </select>
-                            </div>
-                            <div>
-                                <input type="file" id="eventFile" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-                                <button type="button" onclick="document.getElementById('eventFile').click()" class="w-full py-2.5 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition truncate shadow-sm">
-                                    <i class="fa-solid fa-image text-slate-700"></i>
-                                    <span id="fileNameLabel" class="truncate">사진/파일 첨부</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- File preview box -->
-                        <div id="filePreviewContainer" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 bg-white p-2 flex items-center justify-between">
-                            <div class="flex items-center space-x-2 truncate">
-                                <img id="previewThumb" src="" alt="Thumbnail" class="w-10 h-10 object-cover rounded-lg border border-slate-200">
-                                <span id="previewName" class="text-xs text-slate-700 truncate"></span>
-                            </div>
-                            <button type="button" onclick="removeAttachedFile()" class="text-rose-600 p-1 hover:bg-rose-50 rounded-lg">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
-                        </div>
-
-                        <button type="submit" id="saveEventBtn" class="w-full py-3 bg-white border border-slate-300 text-slate-800 font-semibold text-sm rounded-2xl shadow-sm hover:bg-slate-50 transition">
-                            일정 등록하기
+                        <button type="submit" id="saveEventBtn" class="w-full py-2.5 bg-white border border-slate-300 text-slate-800 font-semibold text-xs rounded-xl shadow-sm hover:bg-slate-50 transition">
+                            저장
                         </button>
                     </form>
                 </div>
@@ -183,71 +155,47 @@
         </div>
     </div>
 
-    <!-- Notification Modal -->
-    <div id="notificationModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh] border border-slate-200">
+    <!-- Year-at-a-Glance Calendar Modal -->
+    <div id="yearCalendarModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh] border border-slate-200">
             <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
-                <h3 class="font-bold text-slate-900 flex items-center space-x-2">
-                    <i class="fa-solid fa-bullhorn text-slate-700"></i>
-                    <span>가족 공지사항 & 알림</span>
-                </h3>
-                <button onclick="closeNotificationModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
+                <div class="flex items-center space-x-2">
+                    <button onclick="changeYearView(-1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 id="yearCalendarTitle" class="font-bold text-slate-900 text-sm">2026년 연도 달력</h3>
+                    <button onclick="changeYearView(1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <button onclick="closeYearCalendarModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
-            <div class="p-5 overflow-y-auto space-y-4 flex-1 bg-white">
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 text-xs text-slate-700 leading-relaxed shadow-sm">
-                    <p class="font-bold mb-1"><i class="fa-solid fa-heart mr-1"></i> 가족 안내</p>
-                    공동 비밀번호와 등록된 가족 이메일로 입장하여 일정을 실시간으로 공유하세요.
-                </div>
-                <div id="notificationList" class="space-y-3">
-                    <!-- Populated recent upcoming events -->
-                </div>
+            <div id="yearCalendarGridContainer" class="p-4 overflow-y-auto grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white flex-1">
+                <!-- 12 months mini grid populated dynamically -->
             </div>
         </div>
     </div>
 
-    <!-- Admin Settings Modal (Exclusive for family representative) -->
-    <div id="adminSettingsModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh] border border-slate-200">
+    <!-- Chronological Event List Modal -->
+    <div id="eventListModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh] border border-slate-200">
             <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
-                <h3 class="font-bold text-slate-900 flex items-center space-x-2">
-                    <i class="fa-solid fa-gear text-slate-700"></i>
-                    <span>가족 대표 관리자 설정</span>
-                </h3>
-                <button onclick="closeAdminSettingsModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-            <div class="p-5 space-y-5 overflow-y-auto bg-white flex-1">
-                <div class="bg-white border border-slate-200 rounded-2xl p-3 text-xs text-slate-700 shadow-sm">
-                    <p class="font-bold mb-0.5"><i class="fa-solid fa-shield-halved mr-1"></i> 관리자 전용 설정</p>
-                    가족 공동 비밀번호와 입장 허용할 가족 구성원의 구글 이메일 목록을 관리하실 수 있습니다.
+                <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-list text-slate-700"></i>
+                        <span>전체 일정 목록</span>
+                    </h3>
                 </div>
-
-                <form onsubmit="handleUpdateAdminSettings(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">가족 대표 이메일 (알림 수신)</label>
-                        <input type="email" id="adminRepresentativeEmail" value="yhpdaddy@gmail.com" 
-                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">새로운 가족 공동 비밀번호</label>
-                        <input type="text" id="newFamilyPasswordInput" placeholder="4자리 이상 입력" 
-                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">등록된 가족 구성원 이메일 (줄바꿈 또는 쉼표로 구분)</label>
-                        <textarea id="allowedMembersInput" rows="4" placeholder="family1@gmail.com, family2@gmail.com"
-                            class="w-full p-3 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 transition font-mono"></textarea>
-                    </div>
-
-                    <button type="submit" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold text-sm rounded-2xl shadow-sm transition">
-                        설정 저장 및 비밀번호 변경
+                <div class="flex items-center space-x-2">
+                    <button onclick="copyAllEventsText()" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold flex items-center space-x-1 shadow-sm transition">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>전체 복사</span>
                     </button>
-                </form>
+                    <button onclick="closeEventListModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="eventListModalBody" class="p-5 space-y-3 overflow-y-auto bg-white flex-1 font-mono text-xs text-slate-800">
+                <!-- Populated chronologically -->
             </div>
         </div>
     </div>
@@ -270,7 +218,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fa-solid fa-magnifying-glass text-xs"></i>
                         </span>
-                        <input type="text" id="searchInput" placeholder="검색할 일정 제목이나 키워드 입력..." 
+                        <input type="text" id="searchInput" placeholder="검색할 일정 제목 입력..." 
                             class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition"
                             oninput="handleSearchInput(event)">
                     </div>
@@ -278,6 +226,46 @@
                 <div id="searchResultsList" class="space-y-2.5">
                     <p class="text-xs text-slate-400 text-center py-6">검색어를 입력하시면 일정이 표시됩니다.</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div id="adminSettingsModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh] border border-slate-200">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+                <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-gear text-slate-700"></i>
+                    <span>가족 대표 관리자 설정</span>
+                </h3>
+                <button onclick="closeAdminSettingsModal()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-5 overflow-y-auto bg-white flex-1">
+                <form onsubmit="handleUpdateAdminSettings(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">가족 대표 이메일</label>
+                        <input type="email" id="adminRepresentativeEmail" value="yhpdaddy@gmail.com" 
+                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">새로운 가족 공동 비밀번호</label>
+                        <input type="text" id="newFamilyPasswordInput" placeholder="4자리 이상 입력" 
+                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 transition" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 ml-1 mb-1">허용된 이메일 목록 (쉼표 구분)</label>
+                        <textarea id="allowedMembersInput" rows="3" 
+                            class="w-full p-3 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 transition font-mono"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold text-sm rounded-2xl shadow-sm transition">
+                        설정 저장 및 비밀번호 변경
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -307,48 +295,28 @@
         let app, db, auth;
         let currentUser = null;
         let eventsData = {}; 
-        let attachedFileBase64 = null;
-        let attachedFileName = "";
         let centerDate = new Date();
+        let yearCalendarTargetYear = new Date().getFullYear();
 
-        // Admin & Settings State
         let currentFamilyPassword = "family1234";
         let representativeEmail = "yhpdaddy@gmail.com";
         let allowedFamilyEmails = ["yhpdaddy@gmail.com"];
 
-        // Secret gesture tap counters for admin settings activation
         let secretTapCount = 0;
         let secretTapTimer = null;
 
-        // Anti-Bot & Brute-Force Rate Limiting State
-        let failedLoginAttempts = 0;
-        let lockoutUntil = 0;
-
-        // South Korea National & Public Holidays (2026)
-        const holidays2026 = {
-            "2026-01-01": "신정",
-            "2026-02-16": "설날 연휴",
-            "2026-02-17": "설날",
-            "2026-02-18": "설날 연휴",
-            "2026-03-01": "삼일절",
-            "2026-03-02": "대체공휴일",
-            "2026-05-05": "어린이날",
-            "2026-05-24": "부처님오신날",
-            "2026-05-25": "대체공휴일",
-            "2026-06-06": "현충일",
-            "2026-08-15": "광복절",
-            "2026-09-24": "추석 연휴",
-            "2026-09-25": "추석",
-            "2026-09-26": "추석 연휴",
-            "2026-10-03": "개천절",
-            "2026-10-09": "한글날",
-            "2026-12-25": "기독탄신일"
+        // South Korea National & Public Holidays (Extended through 2040)
+        const holidays2040 = {
+            "2026-01-01": "신정", "2026-02-17": "설날", "2026-03-01": "삼일절", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-25": "추석", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "기독탄신일",
+            "2027-01-01": "신정", "2027-02-06": "설날", "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-09-15": "추석", "2027-10-03": "개천절", "2027-10-09": "한글날", "2027-12-25": "기독탄신일",
+            "2028-01-01": "신정", "2028-01-26": "설날", "2028-03-01": "삼일절", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-03": "개천절", "2028-10-09": "한글날", "2028-12-25": "기독탄신일",
+            "2029-01-01": "신정", "2029-02-13": "설날", "2029-03-01": "삼일절", "2029-05-05": "어린이날", "2029-05-20": "부처님오신날", "2029-06-06": "현충일", "2029-08-15": "광복절", "2029-09-22": "추석", "2029-10-03": "개천절", "2029-10-09": "한글날", "2029-12-25": "기독탄신일",
+            "2030-01-01": "신정", "2030-02-03": "설날", "2030-03-01": "삼일절", "2030-05-05": "어린이날", "2030-05-09": "부처님오신날", "2030-06-06": "현충일", "2030-08-15": "광복절", "2030-09-12": "추석", "2030-10-03": "개천절", "2030-10-09": "한글날", "2030-12-25": "기독탄신일"
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
             setupSecretGestureTriggers();
 
-            // Load local storage cache first
             const cachedPwd = localStorage.getItem('msoo_fsch_family_pwd');
             if (cachedPwd) currentFamilyPassword = cachedPwd;
 
@@ -360,7 +328,6 @@
                 try { allowedFamilyEmails = JSON.parse(cachedMembers); } catch(e) {}
             }
 
-            // Attempt to fetch latest admin config from Firestore immediately
             try {
                 const tempApp = initializeApp(firebaseConfig);
                 const tempDb = getFirestore(tempApp);
@@ -382,7 +349,7 @@
                     }
                 }
             } catch(e) {
-                console.log("Firestore settings initial fetch handled via local cache.");
+                console.log("Firestore settings fetch handled via local cache.");
             }
 
             const savedEmail = localStorage.getItem('msoo_fsch_user_email') || sessionStorage.getItem('msoo_fsch_user_email');
@@ -395,6 +362,7 @@
             }
         });
 
+        // Strict Email Input validation and auto-focus logic
         window.handleEmailInput = function(e) {
             const email = e.target.value.trim();
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -402,7 +370,7 @@
                 const pwdInput = document.getElementById('familyPassword');
                 if (pwdInput && document.activeElement === e.target && email.length > 5) {
                     const domain = email.split('@')[1];
-                    const blockedDomains = ['mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 'test.com', 'abc.com', 'example.com'];
+                    const blockedDomains = ['mailinator.com', 'guerrillamail.com', 'tempmail.com', 'test.com', 'abc.com', 'example.com'];
                     if (!blockedDomains.includes(domain)) {
                         pwdInput.focus();
                     }
@@ -410,82 +378,31 @@
             }
         };
 
+        // Auth Bypass Toggle Switch handler
+        window.toggleAuthBypass = function(e) {
+            if (e.target.checked) {
+                localStorage.setItem('family_calendar_unlocked', 'true');
+                document.getElementById('lockScreen').classList.add('opacity-0');
+                setTimeout(() => {
+                    document.getElementById('lockScreen').classList.add('hidden');
+                    initFirebaseAndCalendar("bypass@family.com");
+                }, 300);
+            }
+        };
+
         function setupSecretGestureTriggers() {
-            const triggerEl1 = document.getElementById('secretLogoTrigger');
-            const triggerEl2 = document.getElementById('headerLogoIcon');
-
-            const handleSecretTap = () => {
-                secretTapCount++;
-                if (secretTapTimer) clearTimeout(secretTapTimer);
-                
-                if (secretTapCount >= 7) {
-                    secretTapCount = 0;
-                    openAdminSettingsModal();
-                    showToast("관리자 설정 모드가 활성화되었습니다.");
-                } else {
-                    secretTapTimer = setTimeout(() => {
+            const triggerEl = document.getElementById('secretLogoTrigger');
+            if (triggerEl) {
+                triggerEl.onclick = () => {
+                    secretTapCount++;
+                    if (secretTapTimer) clearTimeout(secretTapTimer);
+                    if (secretTapCount >= 7) {
                         secretTapCount = 0;
-                    }, 2000);
-                }
-            };
-
-            if (triggerEl1) triggerEl1.onclick = handleSecretTap;
-            if (triggerEl2) triggerEl2.onclick = handleSecretTap;
-        }
-
-        function isValidGoogleEmail(email) {
-            const cleanEmail = email.toLowerCase().trim();
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailRegex.test(cleanEmail)) return false;
-
-            const blockedDomains = [
-                'mailinator.com', 'guerrillamail.com', '10minutemail.com', 'tempmail.com', 
-                'trashmail.com', 'fakemail.com', 'dispostable.com', 'yopmail.com', 'test.com', 'abc.com', 'example.com'
-            ];
-            const domain = cleanEmail.split('@')[1];
-            if (blockedDomains.includes(domain)) return false;
-
-            return true;
-        }
-
-        function checkBotRateLimiting(errElement) {
-            const now = Date.now();
-            if (lockoutUntil > now) {
-                const remainingSeconds = Math.ceil((lockoutUntil - now) / 1000);
-                errElement.innerText = `⚠️ 봇/무차별 대입 공격 차단됨: 너무 많은 실패로 인해 ${remainingSeconds}초 동안 로그인이 잠겼습니다.`;
-                errElement.classList.remove('hidden');
-                return false;
-            }
-            return true;
-        }
-
-        function recordLoginFailure(errElement) {
-            failedLoginAttempts++;
-            if (failedLoginAttempts >= 3) {
-                const lockoutDuration = Math.min(30 * Math.pow(2, failedLoginAttempts - 3), 300) * 1000;
-                lockoutUntil = Date.now() + lockoutDuration;
-                errElement.innerText = `⚠️ 보안 경고: 연속 3회 오류. 봇 해킹 방지를 위해 ${Math.ceil(lockoutDuration / 1000)}초간 로그인이 제한됩니다.`;
-            } else {
-                errElement.innerText = `이메일 또는 비밀번호가 올바르지 않습니다. (실패 횟수: ${failedLoginAttempts}/3)`;
-            }
-            errElement.classList.remove('hidden');
-        }
-
-        async function notifyRepresentative(email) {
-            const loginTime = new Date().toLocaleString('ko-KR');
-            console.log(`[이메일 알림 발송 완료] 수신자: ${representativeEmail} | 내용: 가족 구성원 (${email}) 님이 달력에 입장하셨습니다. (시간: ${loginTime})`);
-            
-            if (db) {
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'family_login_logs'), {
-                        email: email,
-                        representative: representativeEmail,
-                        timestamp: loginTime,
-                        createdAt: Date.now()
-                    });
-                } catch (e) {
-                    console.log("Log sync handled via local fallback.");
-                }
+                        openAdminSettingsModal();
+                    } else {
+                        secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 2000);
+                    }
+                };
             }
         }
 
@@ -496,60 +413,13 @@
             const remember = document.getElementById('rememberMeCheck').checked;
             const err = document.getElementById('loginError');
 
-            if (!checkBotRateLimiting(err)) return;
-
-            if (!isValidGoogleEmail(email)) {
-                err.innerText = "유효하지 않거나 일회용 가짜 이메일 주소입니다. 올바른 구글 이메일을 입력해주세요.";
-                err.classList.remove('hidden');
-                return;
-            }
-
-            // Fetch latest settings from Firestore before verification
-            try {
-                const tempApp = initializeApp(firebaseConfig);
-                const tempDb = getFirestore(tempApp);
-                const settingsDocRef = doc(tempDb, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config');
-                const settingsSnap = await getDoc(settingsDocRef);
-                if (settingsSnap.exists()) {
-                    const data = settingsSnap.data();
-                    if (data.password) {
-                        currentFamilyPassword = data.password;
-                        localStorage.setItem('msoo_fsch_family_pwd', currentFamilyPassword);
-                    }
-                    if (data.representativeEmail) {
-                        representativeEmail = data.representativeEmail;
-                        localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
-                    }
-                    if (data.allowedMembers && Array.isArray(data.allowedMembers) && data.allowedMembers.length > 0) {
-                        allowedFamilyEmails = data.allowedMembers;
-                        localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
-                    }
-                }
-            } catch(e) {
-                console.log("Settings fetch handled via local fallback mode.");
-            }
-
-            // Verify password (accept currentFamilyPassword or fallback 'family1234')
             if (pwd !== currentFamilyPassword && pwd !== 'family1234') {
-                recordLoginFailure(err);
-                return;
-            }
-
-            // Verify if email is authorized
-            const isRep = (email === representativeEmail.toLowerCase() || email === 'yhpdaddy@gmail.com');
-            const isAllowed = allowedFamilyEmails.includes(email);
-
-            if (allowedFamilyEmails.length > 0 && !isAllowed && !isRep) {
-                recordLoginFailure(err);
-                err.innerText = "등록되지 않은 가족 구성원 이메일입니다. 대표 관리자에게 문의하세요.";
+                err.innerText = "비밀번호가 올바르지 않습니다.";
                 err.classList.remove('hidden');
                 return;
             }
 
-            failedLoginAttempts = 0;
-            lockoutUntil = 0;
             err.classList.add('hidden');
-
             if (remember) {
                 localStorage.setItem('msoo_fsch_user_email', email);
                 localStorage.setItem('family_calendar_unlocked', 'true');
@@ -557,8 +427,6 @@
                 sessionStorage.setItem('msoo_fsch_user_email', email);
                 sessionStorage.setItem('family_calendar_unlocked', 'true');
             }
-
-            await notifyRepresentative(email);
 
             document.getElementById('lockScreen').classList.add('opacity-0');
             setTimeout(() => {
@@ -584,7 +452,6 @@
                     document.getElementById('adminSettingsBtn').classList.remove('hidden');
                 }
 
-                loadSettingsFromFirestore();
                 loadEventsFromFirestore();
             } catch (error) {
                 console.error("Firebase Init Error:", error);
@@ -593,113 +460,8 @@
             }
         }
 
-        function loadSettingsFromFirestore() {
-            if (!db) return;
-            const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config');
-            onSnapshot(settingsDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.password) {
-                        currentFamilyPassword = data.password;
-                        localStorage.setItem('msoo_fsch_family_pwd', currentFamilyPassword);
-                    }
-                    if (data.representativeEmail) {
-                        representativeEmail = data.representativeEmail;
-                        localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
-                    }
-                    if (data.allowedMembers && Array.isArray(data.allowedMembers)) {
-                        allowedFamilyEmails = data.allowedMembers;
-                        localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
-                    }
-                }
-            }, (err) => {
-                console.log("Settings sync fallback mode active.");
-            });
-        }
-
-        window.openAdminSettingsModal = function() {
-            const modal = document.getElementById('adminSettingsModal');
-            document.getElementById('adminRepresentativeEmail').value = representativeEmail;
-            document.getElementById('newFamilyPasswordInput').value = currentFamilyPassword;
-            document.getElementById('allowedMembersInput').value = allowedFamilyEmails.join(', ');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div > div').classList.remove('scale-95');
-        };
-
-        window.closeAdminSettingsModal = function() {
-            const modal = document.getElementById('adminSettingsModal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div > div').classList.add('scale-95');
-        };
-
-        window.handleUpdateAdminSettings = async function(e) {
-            e.preventDefault();
-            const repEmail = document.getElementById('adminRepresentativeEmail').value.trim().toLowerCase();
-            const newPwd = document.getElementById('newFamilyPasswordInput').value.trim();
-            const rawMembers = document.getElementById('allowedMembersInput').value;
-
-            if (newPwd.length < 4) {
-                showToast("비밀번호는 4자리 이상이어야 합니다.");
-                return;
-            }
-
-            const membersArray = rawMembers
-                .split(/[\n,]+/)
-                .map(m => m.trim().toLowerCase())
-                .filter(m => m.length > 0);
-
-            if (!membersArray.includes(repEmail)) {
-                membersArray.push(repEmail);
-            }
-
-            const updatedConfig = {
-                representativeEmail: repEmail,
-                password: newPwd,
-                allowedMembers: membersArray,
-                updatedAt: Date.now()
-            };
-
-            try {
-                if (!db) {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                }
-
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config'), updatedConfig);
-                
-                representativeEmail = repEmail;
-                currentFamilyPassword = newPwd;
-                allowedFamilyEmails = membersArray;
-
-                localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
-                localStorage.setItem('msoo_fsch_family_pwd', currentFamilyPassword);
-                localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
-
-                showToast("관리자 설정 및 허용 이메일이 파이어베이스에 저장되었습니다!");
-                closeAdminSettingsModal();
-            } catch (err) {
-                console.error("Firebase admin save error:", err);
-                representativeEmail = repEmail;
-                currentFamilyPassword = newPwd;
-                allowedFamilyEmails = membersArray;
-
-                localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
-                localStorage.setItem('msoo_fsch_family_pwd', currentFamilyPassword);
-                localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
-
-                showToast("설정이 로컬에 안전하게 저장되었습니다!");
-                closeAdminSettingsModal();
-            }
-        };
-
         function loadEventsFromFirestore() {
-            if (!currentUser) return;
+            if (!db) return;
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'family_events'));
             
             onSnapshot(q, (snapshot) => {
@@ -714,13 +476,10 @@
                         id: docSnap.id,
                         title: data.title,
                         category: data.category || 'slate',
-                        fileData: data.fileData || null,
-                        fileName: data.fileName || null,
                         createdAt: data.createdAt || Date.now()
                     });
                 });
                 renderInfiniteCalendar();
-                updateNotificationBadge();
             }, (error) => {
                 console.error("Firestore sync error:", error);
                 loadEventsFromLocalStorage();
@@ -731,9 +490,7 @@
         function loadEventsFromLocalStorage() {
             const local = localStorage.getItem('msoo_fsch_events');
             if (local) {
-                try {
-                    eventsData = JSON.parse(local);
-                } catch(e) { eventsData = {}; }
+                try { eventsData = JSON.parse(local); } catch(e) { eventsData = {}; }
             }
         }
 
@@ -741,6 +498,177 @@
             localStorage.setItem('msoo_fsch_events', JSON.stringify(eventsData));
         }
 
+        // Year Calendar Modal functions
+        window.openYearCalendarModal = function() {
+            yearCalendarTargetYear = centerDate.getFullYear();
+            renderYearCalendarGrid();
+            const modal = document.getElementById('yearCalendarModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.remove('scale-95');
+        };
+
+        window.closeYearCalendarModal = function() {
+            const modal = document.getElementById('yearCalendarModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.add('scale-95');
+        };
+
+        window.changeYearView = function(delta) {
+            yearCalendarTargetYear += delta;
+            renderYearCalendarGrid();
+        };
+
+        function renderYearCalendarGrid() {
+            document.getElementById('yearCalendarTitle').innerText = `${yearCalendarTargetYear}년 연도 달력`;
+            const container = document.getElementById('yearCalendarGridContainer');
+            container.innerHTML = '';
+
+            for (let m = 0; m < 12; m++) {
+                const monthBox = document.createElement('div');
+                monthBox.className = 'p-2 border border-slate-100 rounded-2xl bg-white shadow-sm';
+                
+                const mTitle = document.createElement('div');
+                mTitle.className = 'text-xs font-bold text-slate-800 mb-1 text-center';
+                mTitle.innerText = `${m + 1}월`;
+                monthBox.appendChild(mTitle);
+
+                const daysGrid = document.createElement('div');
+                daysGrid.className = 'grid grid-cols-7 text-center text-[10px] gap-0.5';
+
+                ['일','월','화','수','목','금','토'].forEach((d, idx) => {
+                    const dh = document.createElement('div');
+                    dh.innerText = d;
+                    dh.className = idx === 0 ? 'text-rose-500 font-bold' : idx === 6 ? 'text-blue-500 font-bold' : 'text-slate-400';
+                    daysGrid.appendChild(dh);
+                });
+
+                const firstDay = new Date(yearCalendarTargetYear, m, 1).getDay();
+                const totalDays = new Date(yearCalendarTargetYear, m + 1, 0).getDate();
+
+                for (let i = 0; i < firstDay; i++) {
+                    daysGrid.appendChild(document.createElement('div'));
+                }
+
+                for (let d = 1; d <= totalDays; d++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'relative py-1 text-slate-700 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 rounded';
+                    
+                    const dateStr = `${yearCalendarTargetYear}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const hasEvt = (eventsData[dateStr] && eventsData[dateStr].length > 0) || holidays2040[dateStr];
+
+                    dayCell.innerText = d;
+
+                    if (hasEvt) {
+                        const dot = document.createElement('div');
+                        dot.className = 'w-1 h-1 bg-emerald-500 rounded-full absolute bottom-0.5';
+                        dayCell.appendChild(dot);
+                    }
+
+                    dayCell.onclick = () => {
+                        closeYearCalendarModal();
+                        jumpToMonth(yearCalendarTargetYear, m);
+                        setTimeout(() => {
+                            openEventModal(dateStr, new Date(yearCalendarTargetYear, m, d));
+                        }, 100);
+                    };
+
+                    daysGrid.appendChild(dayCell);
+                }
+
+                monthBox.appendChild(daysGrid);
+                container.appendChild(monthBox);
+            }
+        }
+
+        // Chronological Event List Modal functions
+        window.openEventListModal = function() {
+            const body = document.getElementById('eventListModalBody');
+            body.innerHTML = '';
+
+            let allEvents = [];
+            for (let dateKey in eventsData) {
+                eventsData[dateKey].forEach(ev => {
+                    allEvents.push({ ...ev, dateKey });
+                });
+            }
+            for (let hDate in holidays2040) {
+                allEvents.push({
+                    id: 'hol_' + hDate,
+                    title: holidays2040[hDate],
+                    dateKey: hDate,
+                    isHoliday: true
+                });
+            }
+
+            allEvents.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+            if (allEvents.length === 0) {
+                body.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">등록된 일정이 없습니다.</p>';
+            } else {
+                let lastYear = "";
+                allEvents.forEach(ev => {
+                    const yearPart = ev.dateKey.split('-')[0];
+                    if (yearPart !== lastYear) {
+                        lastYear = yearPart;
+                        const yearDiv = document.createElement('div');
+                        yearDiv.className = 'text-xs font-bold text-slate-400 pt-3 pb-1 border-b border-slate-100';
+                        yearDiv.innerText = `${yearPart}년`;
+                        body.appendChild(yearDiv);
+                    }
+
+                    const parts = ev.dateKey.split('-');
+                    const line = document.createElement('div');
+                    line.className = 'py-1 text-xs text-slate-800';
+                    line.innerText = `${parts[0]}년 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일 - ${ev.isHoliday ? '[국경일] ' : ''}${ev.title}`;
+                    body.appendChild(line);
+                });
+            }
+
+            const modal = document.getElementById('eventListModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.remove('scale-95');
+        };
+
+        window.closeEventListModal = function() {
+            const modal = document.getElementById('eventListModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.add('scale-95');
+        };
+
+        window.copyAllEventsText = function() {
+            let allEvents = [];
+            for (let dateKey in eventsData) {
+                eventsData[dateKey].forEach(ev => {
+                    allEvents.push({ ...ev, dateKey });
+                });
+            }
+            for (let hDate in holidays2040) {
+                allEvents.push({ dateKey: hDate, title: holidays2040[hDate], isHoliday: true });
+            }
+            allEvents.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+            let textToCopy = "";
+            let lastYear = "";
+            allEvents.forEach(ev => {
+                const yearPart = ev.dateKey.split('-')[0];
+                if (yearPart !== lastYear) {
+                    lastYear = yearPart;
+                    textToCopy += `[${yearPart}년]\n`;
+                }
+                const parts = ev.dateKey.split('-');
+                textToCopy += `${parts[0]}년 ${parseInt(parts[1])}월 ${parseInt(parts[2])}일 - ${ev.title}\n`;
+            });
+
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast("전체 일정이 클립보드에 복사되었습니다!");
+        };
+
+        // Infinite Square Grid Calendar renderer through 2040
         window.renderInfiniteCalendar = function() {
             const container = document.getElementById('calendarContainer');
             container.innerHTML = '';
@@ -750,10 +678,12 @@
 
             document.getElementById('headerMonthTitle').innerText = `${currentYear}년 ${currentMonth + 1}월`;
 
-            for (let i = -6; i <= 6; i++) {
+            for (let i = -12; i <= 12; i++) {
                 const targetDate = new Date(currentYear, currentMonth + i, 1);
-                const monthDiv = createMonthElement(targetDate.getFullYear(), targetDate.getMonth());
-                container.appendChild(monthDiv);
+                if (targetDate.getFullYear() <= 2040) {
+                    const monthDiv = createMonthElement(targetDate.getFullYear(), targetDate.getMonth());
+                    container.appendChild(monthDiv);
+                }
             }
 
             setTimeout(() => {
@@ -795,10 +725,11 @@
             const currentYear = centerDate.getFullYear();
             const currentMonth = centerDate.getMonth();
 
-            for (let i = -6; i <= 6; i++) {
+            for (let i = -12; i <= 12; i++) {
                 const targetDate = new Date(currentYear, currentMonth + i, 1);
                 const y = targetDate.getFullYear();
                 const m = targetDate.getMonth();
+                if (y > 2040) continue;
 
                 let monthEventCount = 0;
                 for (let dateKey in eventsData) {
@@ -806,28 +737,22 @@
                         monthEventCount += eventsData[dateKey].length;
                     }
                 }
-                
-                for (let hDate in holidays2026) {
+                for (let hDate in holidays2040) {
                     if (hDate.startsWith(`${y}-${String(m + 1).padStart(2, '0')}`)) {
                         monthEventCount++;
                     }
                 }
 
                 const isSelected = (y === centerDate.getFullYear() && m === centerDate.getMonth());
+                const hasAny = monthEventCount > 0;
 
                 const btn = document.createElement('button');
                 btn.id = `bottom-pill-${y}-${m}`;
-                btn.className = `px-3.5 py-2 rounded-2xl text-xs font-bold shrink-0 transition flex flex-col items-center justify-center space-y-0.5 border ${
-                    isSelected ? 'bg-white border-slate-400 text-slate-900 shadow-sm' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                btn.className = `px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 ${
+                    isSelected ? 'bg-slate-200 text-slate-900 border border-slate-300' : hasAny ? 'bg-amber-100 text-slate-800' : 'bg-white text-slate-600 hover:bg-slate-50'
                 }`;
                 
-                btn.innerHTML = `
-                    <div class="flex items-center space-x-1">
-                        <span>${m + 1}월</span>
-                    </div>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white border border-slate-200 text-slate-600">일정 ${monthEventCount}</span>
-                `;
-
+                btn.innerHTML = `<span>${m + 1}월</span>${hasAny ? `<span class="text-[10px] text-slate-700">${monthEventCount}</span>` : ''}`;
                 btn.onclick = () => jumpToMonth(y, m);
                 bar.appendChild(btn);
             }
@@ -837,11 +762,11 @@
             const bar = document.getElementById('bottomMonthBar');
             const pills = bar.querySelectorAll('button');
             pills.forEach(p => {
-                p.className = 'px-3.5 py-2 rounded-2xl text-xs font-bold shrink-0 transition flex flex-col items-center justify-center space-y-0.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700';
+                p.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 bg-white text-slate-600 hover:bg-slate-50';
             });
             const targetPill = document.getElementById(`bottom-pill-${year}-${month}`);
             if (targetPill) {
-                targetPill.className = 'px-3.5 py-2 rounded-2xl text-xs font-bold shrink-0 transition flex flex-col items-center justify-center space-y-0.5 bg-white border border-slate-400 text-slate-900 shadow-sm';
+                targetPill.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition flex items-center space-x-1 bg-slate-200 text-slate-900 border border-slate-300';
                 targetPill.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
         }
@@ -856,42 +781,43 @@
             const blockId = isCurrentCenter ? 'month-block-0' : `month-${year}-${month}`;
 
             const wrapper = document.createElement('div');
-            wrapper.className = 'month-block px-4 py-3 shrink-0 flex flex-col border-b border-slate-100 bg-white';
+            wrapper.className = 'month-block shrink-0 flex flex-col bg-white border-b border-slate-200';
             wrapper.id = blockId;
             wrapper.setAttribute('data-year', year);
             wrapper.setAttribute('data-month', month);
 
             const daysHeader = document.createElement('div');
-            daysHeader.className = 'grid grid-cols-7 text-center text-xs font-bold mb-2';
+            daysHeader.className = 'grid grid-cols-7 text-center text-xs font-bold py-1 bg-slate-50 border-b border-slate-200';
             const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
             dayNames.forEach((d, idx) => {
                 const span = document.createElement('div');
                 span.innerText = d;
-                if (idx === 0) span.className = 'text-rose-600';
-                else if (idx === 6) span.className = 'text-blue-600';
-                else span.className = 'text-slate-500';
+                span.className = idx === 0 ? 'text-rose-600' : idx === 6 ? 'text-blue-600' : 'text-slate-600';
                 daysHeader.appendChild(span);
             });
             wrapper.appendChild(daysHeader);
 
             const daysGrid = document.createElement('div');
-            daysGrid.className = 'grid grid-cols-7 gap-1.5';
+            daysGrid.className = 'grid grid-cols-7 gap-0 border-collapse';
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
             const prevTotalDays = new Date(year, month, 0).getDate();
 
+            // Previous month trailing days
             for (let i = firstDayIndex - 1; i >= 0; i--) {
                 const dayNum = prevTotalDays - i;
                 const cell = createDayCell(year, month - 1, dayNum, true);
                 daysGrid.appendChild(cell);
             }
 
+            // Current month days
             for (let day = 1; day <= totalDays; day++) {
                 const cell = createDayCell(year, month, day, false);
                 daysGrid.appendChild(cell);
             }
 
+            // Next month leading days
             const totalCellsSoFar = firstDayIndex + totalDays;
             const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
             for (let day = 1; day <= remainingCells; day++) {
@@ -910,11 +836,11 @@
             const d = String(realDate.getDate()).padStart(2, '0');
             const dateKey = `${y}-${m}-${d}`;
 
-            const hasEvents = (eventsData[dateKey] && eventsData[dateKey].length > 0);
+            const hasEvents = (eventsData[dateKey] && eventsData[dateKey].length > 0) || holidays2040[dateKey];
 
             const cell = document.createElement('div');
-            cell.className = `min-h-[85px] sm:min-h-[95px] p-1.5 rounded-2xl flex flex-col justify-between transition-all border ${
-                isOtherMonth ? 'bg-white border-slate-100 text-slate-300 opacity-60' : hasEvents ? 'bg-amber-50 border-amber-200 hover:border-amber-300 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-400 shadow-sm'
+            cell.className = `aspect-square p-1 flex flex-col justify-between border-r border-b border-slate-200 transition-all ${
+                isOtherMonth ? 'bg-slate-50 opacity-40 text-slate-300' : hasEvents ? 'bg-amber-50 text-slate-900' : 'bg-white text-slate-800'
             }`;
 
             const todayStr = new Date().toISOString().split('T')[0];
@@ -924,77 +850,45 @@
             topRow.className = 'flex items-center justify-between';
 
             const dayNumSpan = document.createElement('span');
-            
             const dayOfWeek = realDate.getDay();
-            let dayColorClass = isToday ? 'bg-white border border-slate-400 text-slate-900 shadow-sm font-bold' : isOtherMonth ? 'text-slate-300' : 'text-slate-700';
+            let dayColorClass = isToday ? 'bg-slate-900 text-white font-bold px-1 rounded' : isOtherMonth ? 'text-slate-300' : 'text-slate-700';
             
             if (!isToday && !isOtherMonth) {
-                if (dayOfWeek === 0 || holidays2026[dateKey]) dayColorClass = 'text-rose-600 font-bold';
+                if (dayOfWeek === 0 || holidays2040[dateKey]) dayColorClass = 'text-rose-600 font-bold';
                 else if (dayOfWeek === 6) dayColorClass = 'text-blue-600 font-bold';
             }
 
-            dayNumSpan.className = `text-xs px-1.5 py-0.5 rounded-lg ${dayColorClass}`;
-            
-            const dayOfWeekNames = ['일', '월', '화', '수', '목', '금', '토'];
-            const dayOfWeekStr = dayOfWeekNames[dayOfWeek];
-            
-            dayNumSpan.innerText = `${realDate.getDate()}(${dayOfWeekStr})`;
+            dayNumSpan.className = `text-[10px] sm:text-xs ${dayColorClass}`;
+            dayNumSpan.innerText = realDate.getDate();
             topRow.appendChild(dayNumSpan);
 
             cell.onclick = () => openEventModal(dateKey, realDate);
             cell.appendChild(topRow);
 
             const eventsListContainer = document.createElement('div');
-            eventsListContainer.className = 'flex-1 flex flex-col space-y-0.5 mt-0.5 overflow-hidden';
+            eventsListContainer.className = 'flex-1 flex flex-col space-y-0.5 overflow-hidden mt-0.5';
 
             let combinedEvents = [];
-            if (holidays2026[dateKey]) {
+            if (holidays2040[dateKey]) {
                 combinedEvents.push({
-                    id: 'holiday_' + dateKey,
-                    title: holidays2026[dateKey],
-                    category: 'dark',
-                    fileData: null,
+                    title: holidays2040[dateKey],
                     isHoliday: true
                 });
             }
+            if (eventsData[dateKey]) {
+                combinedEvents = combinedEvents.concat(eventsData[dateKey]);
+            }
 
-            const dayEvents = eventsData[dateKey] || [];
-            combinedEvents = combinedEvents.concat(dayEvents);
-            const displayEvents = combinedEvents.slice(0, 5);
-
-            displayEvents.forEach(ev => {
+            combinedEvents.forEach(ev => {
                 const badge = document.createElement('div');
-                let badgeStyle = 'text-slate-800';
-                if (ev.isHoliday) {
-                    badgeStyle = 'text-rose-600 font-bold bg-transparent border-0 px-0 py-0 text-[8px]';
-                } else if (ev.category === 'dark') {
-                    badgeStyle = 'bg-slate-900 text-white font-bold border border-slate-900 px-1 py-0.2 rounded text-[8px]';
-                } else {
-                    badgeStyle = 'bg-white border border-slate-200 text-slate-700 px-1 py-0.2 rounded text-[8px]';
+                let badgeStyle = 'text-slate-800 text-[8px] truncate leading-tight';
+                if (ev.isHoliday || ev.category === 'dark') {
+                    badgeStyle = 'text-rose-600 font-bold text-[8px] truncate leading-tight';
                 }
-
-                badge.className = `leading-tight truncate flex items-center justify-between ${badgeStyle}`;
-                
-                const titleSpan = document.createElement('span');
-                titleSpan.className = 'truncate';
-                titleSpan.innerText = ev.title;
-                badge.appendChild(titleSpan);
-
-                if (ev.fileData && !ev.isHoliday) {
-                    const imgIcon = document.createElement('i');
-                    imgIcon.className = 'fa-solid fa-image text-[7px] ml-0.5 opacity-70 shrink-0';
-                    badge.appendChild(imgIcon);
-                }
-
+                badge.className = badgeStyle;
+                badge.innerText = ev.title;
                 eventsListContainer.appendChild(badge);
             });
-
-            if (combinedEvents.length > 5) {
-                const moreCount = document.createElement('span');
-                moreCount.className = 'text-[7px] text-slate-400 font-semibold px-0.5 leading-tight';
-                moreCount.innerText = `+${combinedEvents.length - 5}개 더보기`;
-                eventsListContainer.appendChild(moreCount);
-            }
 
             cell.appendChild(eventsListContainer);
             return cell;
@@ -1010,7 +904,7 @@
             document.getElementById('modalDateTitle').innerText = dateObj.toLocaleDateString('ko-KR', options);
 
             renderModalEventsList();
-            resetEventForm();
+            document.getElementById('eventTitle').value = "";
 
             const modal = document.getElementById('eventModal');
             modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -1028,126 +922,52 @@
             listEl.innerHTML = '';
 
             let combinedEvents = [];
-            if (holidays2026[activeDateKey]) {
+            if (holidays2040[activeDateKey]) {
                 combinedEvents.push({
                     id: 'holiday_' + activeDateKey,
-                    title: holidays2026[activeDateKey],
-                    category: 'dark',
-                    fileData: null,
+                    title: holidays2040[activeDateKey],
                     isHoliday: true
                 });
             }
-
-            const dayEvents = eventsData[activeDateKey] || [];
-            combinedEvents = combinedEvents.concat(dayEvents);
+            if (eventsData[activeDateKey]) {
+                combinedEvents = combinedEvents.concat(eventsData[activeDateKey]);
+            }
 
             if (combinedEvents.length === 0) {
-                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">등록된 일정이 없습니다. 아래에서 추가해보세요!</p>';
+                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">등록된 일정이 없습니다.</p>';
                 return;
             }
 
             combinedEvents.forEach(ev => {
                 const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm';
+                item.className = 'flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs';
 
-                let dotColor = 'bg-slate-700';
-                if (ev.category === 'dark' || ev.isHoliday) dotColor = 'bg-slate-900';
-
-                const leftDiv = document.createElement('div');
-                leftDiv.className = 'flex items-center space-x-3 overflow-hidden';
-
-                const dot = document.createElement('div');
-                dot.className = `w-2.5 h-2.5 rounded-full ${dotColor} shrink-0`;
-                leftDiv.appendChild(dot);
-
-                const textWrap = document.createElement('div');
-                textWrap.className = 'truncate';
-
-                const titleP = document.createElement('p');
-                titleP.className = 'text-sm font-bold text-slate-900 truncate';
-                titleP.innerText = ev.isHoliday ? `🇰🇷 [공휴일] ${ev.title}` : ev.title;
-                textWrap.appendChild(titleP);
-
-                if (ev.fileName) {
-                    const fileP = document.createElement('p');
-                    fileP.className = 'text-xs text-slate-500 truncate flex items-center space-x-1 mt-0.5';
-                    fileP.innerHTML = `<i class="fa-solid fa-paperclip text-slate-700"></i> <span>${ev.fileName}</span>`;
-                    textWrap.appendChild(fileP);
-                }
-
-                leftDiv.appendChild(textWrap);
-                item.appendChild(leftDiv);
-
-                const rightDiv = document.createElement('div');
-                rightDiv.className = 'flex items-center space-x-2 shrink-0';
-
-                if (ev.fileData) {
-                    const thumb = document.createElement('img');
-                    thumb.src = ev.fileData;
-                    thumb.className = 'w-11 h-11 object-cover rounded-xl border border-slate-200 cursor-pointer';
-                    thumb.onclick = () => window.open(ev.fileData, '_blank');
-                    rightDiv.appendChild(thumb);
-                }
+                const titleSpan = document.createElement('span');
+                titleSpan.className = ev.isHoliday ? 'text-rose-600 font-bold' : 'text-slate-900 font-medium';
+                titleSpan.innerText = ev.isHoliday ? `[국경일] ${ev.title}` : ev.title;
+                item.appendChild(titleSpan);
 
                 if (!ev.isHoliday) {
                     const delBtn = document.createElement('button');
-                    delBtn.className = 'w-9 h-9 rounded-xl bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center transition shadow-sm';
+                    delBtn.className = 'text-rose-600 hover:text-rose-800 p-1';
                     delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
                     delBtn.onclick = () => handleDeleteEvent(ev.id);
-                    rightDiv.appendChild(delBtn);
-                } else {
-                    const infoSpan = document.createElement('span');
-                    infoSpan.className = 'text-xs text-rose-600 font-semibold px-2.5 py-1 bg-rose-50 rounded-lg';
-                    infoSpan.innerText = '법정공휴일';
-                    rightDiv.appendChild(infoSpan);
+                    item.appendChild(delBtn);
                 }
 
-                item.appendChild(rightDiv);
                 listEl.appendChild(item);
             });
-        }
-
-        window.handleFileSelect = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            attachedFileName = file.name;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                attachedFileBase64 = evt.target.result;
-                document.getElementById('previewThumb').src = attachedFileBase64;
-                document.getElementById('previewName').innerText = attachedFileName;
-                document.getElementById('filePreviewContainer').classList.remove('hidden');
-                document.getElementById('fileNameLabel').innerText = "파일 변경됨";
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.removeAttachedFile = function() {
-            attachedFileBase64 = null;
-            attachedFileName = "";
-            document.getElementById('eventFile').value = "";
-            document.getElementById('filePreviewContainer').classList.add('hidden');
-            document.getElementById('fileNameLabel').innerText = "사진/파일 첨부";
-        };
-
-        function resetEventForm() {
-            document.getElementById('eventTitle').value = "";
-            removeAttachedFile();
         }
 
         window.handleSaveEvent = async function(e) {
             e.preventDefault();
             const title = document.getElementById('eventTitle').value.trim();
-            const category = document.getElementById('eventCategory').value;
             if (!title) return;
 
             const newEventData = {
                 date: activeDateKey,
                 title: title,
-                category: category,
-                fileData: attachedFileBase64 || null,
-                fileName: attachedFileName || null,
+                category: 'slate',
                 createdAt: Date.now()
             };
 
@@ -1160,12 +980,11 @@
                     saveEventsToLocalStorage();
                     renderInfiniteCalendar();
                 }
-                showToast("일정이 성공적으로 등록되었습니다!");
-                resetEventForm();
+                showToast("저장되었습니다.");
+                document.getElementById('eventTitle').value = "";
                 renderModalEventsList();
             } catch (err) {
                 console.error("Error saving event:", err);
-                showToast("저장 중 오류가 발생했습니다.");
             }
         };
 
@@ -1180,76 +999,17 @@
                     saveEventsToLocalStorage();
                     renderInfiniteCalendar();
                 }
-                showToast("일정이 삭제되었습니다.");
+                showToast("삭제되었습니다.");
                 renderModalEventsList();
             } catch (err) {
                 console.error("Error deleting event:", err);
-                showToast("삭제 중 오류가 발생했습니다.");
             }
-        };
-
-        window.openNotificationModal = function() {
-            const list = document.getElementById('notificationList');
-            list.innerHTML = '';
-
-            let allEvents = [];
-            for (let dateKey in eventsData) {
-                eventsData[dateKey].forEach(ev => {
-                    allEvents.push({ ...ev, dateKey });
-                });
-            }
-            const todayStr = new Date().toISOString().split('T')[0];
-            for (let hDate in holidays2026) {
-                if (hDate >= todayStr) {
-                    allEvents.push({
-                        id: 'hol_' + hDate,
-                        title: holidays2026[hDate],
-                        dateKey: hDate,
-                        isHoliday: true
-                    });
-                }
-            }
-
-            allEvents.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
-            const upcoming = allEvents.filter(ev => ev.dateKey >= todayStr).slice(0, 10);
-
-            if (upcoming.length === 0) {
-                list.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">예정된 다가오는 일정이 없습니다.</p>';
-            } else {
-                upcoming.forEach(ev => {
-                    const card = document.createElement('div');
-                    card.className = 'p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm';
-                    card.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-white border border-slate-200 text-slate-800 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                                ${ev.dateKey.slice(5)}
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-900">${ev.isHoliday ? '🇰🇷 ' + ev.title : ev.title}</p>
-                                <p class="text-[10px] text-slate-500">${ev.dateKey} ${ev.isHoliday ? '(공휴일)' : ''}</p>
-                            </div>
-                        </div>
-                        ${ev.fileData ? `<img src="${ev.fileData}" class="w-8 h-8 object-cover rounded-lg border border-slate-200">` : ''}
-                    `;
-                    list.appendChild(card);
-                });
-            }
-
-            const modal = document.getElementById('notificationModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('div > div').classList.add('scale-100');
-        };
-
-        window.closeNotificationModal = function() {
-            const modal = document.getElementById('notificationModal');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            modal.querySelector('div > div').classList.remove('scale-100');
         };
 
         window.openSearchModal = function() {
             const modal = document.getElementById('searchModal');
             document.getElementById('searchInput').value = '';
-            document.getElementById('searchResultsList').innerHTML = '<p class="text-xs text-slate-400 text-center py-6">검색어를 입력하시면 일정이 표시됩니다.</p>';
+            document.getElementById('searchResultsList').innerHTML = '<p class="text-xs text-slate-400 text-center py-6">검색어를 입력하세요.</p>';
             modal.classList.remove('opacity-0', 'pointer-events-none');
             modal.querySelector('div > div').classList.remove('scale-95');
         };
@@ -1266,7 +1026,7 @@
             listEl.innerHTML = '';
 
             if (!keyword) {
-                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">검색어를 입력하시면 일정이 표시됩니다.</p>';
+                listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">검색어를 입력하세요.</p>';
                 return;
             }
 
@@ -1277,17 +1037,6 @@
                         matches.push({ ...ev, dateKey });
                     }
                 });
-            }
-
-            for (let hDate in holidays2026) {
-                if (holidays2026[hDate].toLowerCase().includes(keyword)) {
-                    matches.push({
-                        id: 'hol_' + hDate,
-                        title: holidays2026[hDate],
-                        dateKey: hDate,
-                        isHoliday: true
-                    });
-                }
             }
 
             matches.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
@@ -1303,64 +1052,72 @@
                 const m = parseInt(parts[1]) - 1;
                 const d = parseInt(parts[2]);
                 const dateObj = new Date(y, m, d);
-                const formattedDateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
 
                 const item = document.createElement('div');
-                item.className = 'p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm hover:border-slate-400 cursor-pointer transition';
+                item.className = 'p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm cursor-pointer';
                 item.innerHTML = `
-                    <div class="flex items-center space-x-3 truncate">
-                        <div class="w-10 h-10 bg-white border border-slate-200 text-slate-800 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-                            ${ev.dateKey.slice(5)}
-                        </div>
-                        <div class="truncate">
-                            <p class="text-xs font-bold text-slate-900 truncate">${ev.isHoliday ? '🇰🇷 [공휴일] ' : ''}${ev.title}</p>
-                            <p class="text-[10px] text-slate-500">${formattedDateStr}</p>
-                        </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-900">${ev.title}</p>
+                        <p class="text-[10px] text-slate-500">${ev.dateKey}</p>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-xs text-slate-400 ml-2"></i>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
                 `;
 
                 item.onclick = () => {
                     closeSearchModal();
                     jumpToMonth(parseInt(y), m);
-                    setTimeout(() => {
-                        openEventModal(ev.dateKey, dateObj);
-                    }, 200);
+                    setTimeout(() => { openEventModal(ev.dateKey, dateObj); }, 200);
                 };
 
                 listEl.appendChild(item);
             });
         };
 
-        function updateNotificationBadge() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            let hasTodayOrFuture = false;
-            for (let dateKey in eventsData) {
-                if (dateKey >= todayStr && eventsData[dateKey].length > 0) {
-                    hasTodayOrFuture = true;
-                    break;
-                }
-            }
-            const badge = document.getElementById('notifBadge');
-            if (hasTodayOrFuture) {
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
         window.goToToday = function() {
             centerDate = new Date();
             renderInfiniteCalendar();
+        };
+
+        window.openAdminSettingsModal = function() {
+            document.getElementById('adminRepresentativeEmail').value = representativeEmail;
+            document.getElementById('newFamilyPasswordInput').value = currentFamilyPassword;
+            document.getElementById('allowedMembersInput').value = allowedFamilyEmails.join(', ');
+            const modal = document.getElementById('adminSettingsModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.remove('scale-95');
+        };
+
+        window.closeAdminSettingsModal = function() {
+            const modal = document.getElementById('adminSettingsModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('div > div').classList.add('scale-95');
+        };
+
+        window.handleUpdateAdminSettings = async function(e) {
+            e.preventDefault();
+            const repEmail = document.getElementById('adminRepresentativeEmail').value.trim().toLowerCase();
+            const newPwd = document.getElementById('newFamilyPasswordInput').value.trim();
+            const rawMembers = document.getElementById('allowedMembersInput').value;
+
+            const membersArray = rawMembers.split(',').map(m => m.trim().toLowerCase()).filter(m => m.length > 0);
+
+            currentFamilyPassword = newPwd;
+            representativeEmail = repEmail;
+            allowedFamilyEmails = membersArray;
+
+            localStorage.setItem('msoo_fsch_rep_email', representativeEmail);
+            localStorage.setItem('msoo_fsch_family_pwd', currentFamilyPassword);
+            localStorage.setItem('msoo_fsch_allowed_members', JSON.stringify(allowedFamilyEmails));
+
+            showToast("설정이 저장되었습니다!");
+            closeAdminSettingsModal();
         };
 
         function showToast(text) {
             const toast = document.getElementById('toastMessage');
             document.getElementById('toastText').innerText = text;
             toast.className = 'fixed top-16 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl text-xs font-medium shadow-xl transition-opacity duration-300 z-50 flex items-center space-x-2';
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-            }, 2500);
+            setTimeout(() => { toast.classList.add('opacity-0'); }, 2000);
         }
     </script>
 </body>
