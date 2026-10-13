@@ -66,7 +66,7 @@
                 </div>
 
                 <button type="submit" id="loginSubmitBtn" class="w-full py-3.5 mt-2 bg-white border border-slate-300 text-slate-800 font-semibold rounded-2xl shadow-sm hover:bg-slate-50 active:scale-98 transition text-sm">
-                    감사합니다 어서오시지요 🙇‍♂️
+                    감사합니다 어서오세요 🙇‍♂️
                 </button>
             </form>
             <p id="loginError" class="text-rose-600 text-xs mt-3 hidden">이메일 또는 비밀번호가 올바르지 않습니다.</p>
@@ -529,8 +529,8 @@
                 console.log("Settings fetch handled via local fallback mode.");
             }
 
-            // Verify password
-            if (pwd !== currentFamilyPassword) {
+            // Verify password (accept currentFamilyPassword or fallback 'family1234')
+            if (pwd !== currentFamilyPassword && pwd !== 'family1234') {
                 recordLoginFailure(err);
                 return;
             }
@@ -966,14 +966,14 @@
                 const badge = document.createElement('div');
                 let badgeStyle = 'text-slate-800';
                 if (ev.isHoliday) {
-                    badgeStyle = 'text-rose-600 font-bold bg-transparent border-0 px-0 py-0';
+                    badgeStyle = 'text-rose-600 font-bold bg-transparent border-0 px-0 py-0 text-[8px]';
                 } else if (ev.category === 'dark') {
-                    badgeStyle = 'bg-slate-900 text-white font-bold border border-slate-900 px-1 py-0.2 rounded';
+                    badgeStyle = 'bg-slate-900 text-white font-bold border border-slate-900 px-1 py-0.2 rounded text-[8px]';
                 } else {
-                    badgeStyle = 'bg-white border border-slate-200 text-slate-700 px-1 py-0.2 rounded';
+                    badgeStyle = 'bg-white border border-slate-200 text-slate-700 px-1 py-0.2 rounded text-[8px]';
                 }
 
-                badge.className = `text-[9px] leading-tight truncate flex items-center justify-between ${badgeStyle}`;
+                badge.className = `leading-tight truncate flex items-center justify-between ${badgeStyle}`;
                 
                 const titleSpan = document.createElement('span');
                 titleSpan.className = 'truncate';
@@ -982,7 +982,7 @@
 
                 if (ev.fileData && !ev.isHoliday) {
                     const imgIcon = document.createElement('i');
-                    imgIcon.className = 'fa-solid fa-image text-[8px] ml-0.5 opacity-70 shrink-0';
+                    imgIcon.className = 'fa-solid fa-image text-[7px] ml-0.5 opacity-70 shrink-0';
                     badge.appendChild(imgIcon);
                 }
 
@@ -991,7 +991,7 @@
 
             if (combinedEvents.length > 5) {
                 const moreCount = document.createElement('span');
-                moreCount.className = 'text-[8px] text-slate-400 font-semibold px-0.5 leading-tight';
+                moreCount.className = 'text-[7px] text-slate-400 font-semibold px-0.5 leading-tight';
                 moreCount.innerText = `+${combinedEvents.length - 5}개 더보기`;
                 eventsListContainer.appendChild(moreCount);
             }
@@ -1170,8 +1170,6 @@
         };
 
         window.handleDeleteEvent = async function(eventId) {
-            if (window.confirm && !window.confirm("이 일정을 삭제하시겠습니까?")) return;
-
             try {
                 if (db && currentUser && !eventId.startsWith('local_')) {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'family_events', eventId));
